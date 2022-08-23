@@ -1,5 +1,6 @@
 import random
 import os
+import sys
 
 class KnucklebonesGame:
 
@@ -24,7 +25,7 @@ class KnucklebonesGame:
         """
         Let the player "roll" the die; and store the value rolled.
         """
-        _ = input("Press enter to roll the die!")
+        _ = detect_quit_game(input("Press enter to roll the die!"))
 
         self._current_die_value = random.randint(1, 6)
         print(f"You rolled a {self.current_die_value}!")
@@ -82,7 +83,6 @@ class KnucklebonesPlayer:
 
     def __init__(self):
         self._matrix = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
-        self._score = 0
         self._column_scores = [0, 0, 0]
         self.column_lookup = {
             'L': 0,
@@ -100,7 +100,7 @@ class KnucklebonesPlayer:
 
     @property
     def score(self):
-        return self._score
+        return sum(self.column_scores)
     
     @property
     def current_column(self):
@@ -117,7 +117,7 @@ class KnucklebonesPlayer:
         if name:
             self._name = name
         else:
-            self._name = input("Please enter player name: ")
+            self._name = detect_quit_game(input("Please enter player name: "))
 
         return None
 
@@ -126,7 +126,9 @@ class KnucklebonesPlayer:
         Prompt the player to choose the column where they wish to add their rolled value.
         """
         def choose_column():
-            self._current_column = input("Please choose a column to insert your die. (L)eft, (M)iddle, or (R)ight: ")
+            self._current_column = detect_quit_game(
+                input("Please choose a column to insert your die. (L)eft, (M)iddle, or (R)ight: ")
+            )
 
             if self.current_column.upper() not in ['L', 'M', 'R']:
                 print(f"Please put a valid entry of L, M, or R.")
@@ -199,13 +201,6 @@ class KnucklebonesPlayer:
         else:
             self._column_scores[column_index] = sum(column)
 
-        self.update_total_score()
-
-        return None
-
-    def update_total_score(self):
-        self._score = sum(self.column_scores)
-
         return None
 
     def is_column_full(self):
@@ -219,3 +214,12 @@ class KnucklebonesPlayer:
 
         return True
 
+def detect_quit_game(input_value):
+    """
+    Allow the ability to quit the game early on input.
+    """
+    if input_value.upper() == "Q":
+        print("Game ended early after pressing 'Q'!")
+        sys.exit(0)
+
+    return input_value

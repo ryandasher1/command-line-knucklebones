@@ -11,7 +11,7 @@ def game_loop():
     for i in range(len(players)):
         try:
             players[i].set_player_name(player_names[i])
-        except IndexError: # Player names not initially provided.
+        except (IndexError, TypeError): # Player names not initially provided.
             players[i].set_player_name()
             continue
 

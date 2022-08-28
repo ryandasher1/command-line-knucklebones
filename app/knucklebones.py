@@ -98,7 +98,7 @@ class KnucklebonesGame:
         """
         Let the player "roll" the die; and store the value rolled.
         """
-        _ = detect_quit_game(input("** PRESS ENTER TO ROLL THE DIE! **"))
+        _ = detect_quit_game(input("\n** PRESS ENTER TO ROLL THE DIE! **"))
 
         self._current_die_value = random.randint(1, 6)
         print(f"\nYou rolled a {self.current_die_value}!\n")
@@ -109,19 +109,30 @@ class KnucklebonesGame:
         """
         Display the game board.
         """
-        line_break = "======================================="
-        print(line_break)
+        self._render_player_matrix(matrices[0], reverse=False)
 
-        for matrix in matrices:
-            for i in range(len(matrix)):
-                for line in range(self.die_height):
-                    print(
-                        f"{self.die_render_lookup[str(matrix[0][i])][line]} * " \
-                        f"{self.die_render_lookup[str(matrix[1][i])][line]} * " \
-                        f"{self.die_render_lookup[str(matrix[2][i])][line]}"
-                    )
+        print(f"\n=======================================\n")
 
-            print(f"\n{line_break}\n")
+        self._render_player_matrix(matrices[1], reverse=True)
+
+        return None
+
+    def _render_player_matrix(self, matrix, reverse=False):
+        """
+        Show the layout of the die.
+        """
+        for i in range(len(matrix)):
+            for line in range(self.die_height): # The die need to render line-by-line to show properly on the command line.
+                if reverse:
+                    index = len(matrix) - i - 1 # The second matrix should render inverted.
+                else:
+                    index = i
+
+                print(
+                    f"{self.die_render_lookup[str(matrix[0][index])][line]} * " \
+                    f"{self.die_render_lookup[str(matrix[1][index])][line]} * " \
+                    f"{self.die_render_lookup[str(matrix[2][index])][line]}"
+                )
 
         return None
 

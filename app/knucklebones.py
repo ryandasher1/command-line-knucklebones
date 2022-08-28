@@ -7,6 +7,15 @@ class KnucklebonesGame:
     def __init__(self):
         self._active = True
         self._current_die_value = None
+        self.die_render_lookup = {
+            '0': self.render_no_die,
+            '1': self.render_die_1,
+            '2': self.render_die_2,
+            '3': self.render_die_3,
+            '4': self.render_die_4,
+            '5': self.render_die_5,
+            '6': self.render_die_6
+        }
 
     @property
     def active(self):
@@ -16,7 +25,71 @@ class KnucklebonesGame:
     def current_die_value(self):
         return self._current_die_value
 
+    @property
+    def render_no_die(self):
+        return ("           ",
+                "           ",
+                "           ",
+                "           ",
+                "           ")
+
+
+    @property
+    def render_die_1(self):
+        return ("┌─────────┐",
+                "│         │",
+                "│    ●    │",
+                "│         │",
+                "└─────────┘")
+
+    @property
+    def render_die_2(self):
+        return ("┌─────────┐",
+                "│    ●    │",
+                "│         │",
+                "│    ●    │",
+                "└─────────┘")
+
+    @property
+    def render_die_3(sef):
+        return ("┌─────────┐",
+                "│  ●      │",
+                "│    ●    │",
+                "│      ●  │",
+                "└─────────┘")
+
+    @property
+    def render_die_4(self):
+        return ("┌─────────┐",
+                "│  ●   ●  │",
+                "│         │",
+                "│  ●   ●  │",
+                "└─────────┘")
+
+    @property
+    def render_die_5(self):
+        return ("┌─────────┐",
+                "│  ●   ●  │",
+                "│    ●    │",
+                "│  ●   ●  │",
+                "└─────────┘")
+
+    @property
+    def render_die_6(self):
+        return ("┌─────────┐",
+                "│  ●   ●  │",
+                "│  ●   ●  │",
+                "│  ●   ●  │",
+                "└─────────┘")
+
+    @property
+    def die_height(self):
+        return len(self.render_die_1)
+
     def set_player_order(self, players):
+        """
+        Choose a random player to make the first roll.
+        """
         random.shuffle(players)
 
         return players
@@ -25,10 +98,10 @@ class KnucklebonesGame:
         """
         Let the player "roll" the die; and store the value rolled.
         """
-        _ = detect_quit_game(input("Press enter to roll the die!"))
+        _ = detect_quit_game(input("** PRESS ENTER TO ROLL THE DIE! **"))
 
         self._current_die_value = random.randint(1, 6)
-        print(f"You rolled a {self.current_die_value}!")
+        print(f"\nYou rolled a {self.current_die_value}!\n")
 
         return None
 
@@ -36,13 +109,17 @@ class KnucklebonesGame:
         """
         Display the game board.
         """
-        line_break = "======================="
+        line_break = "======================================="
         print(line_break)
 
         for matrix in matrices:
             for i in range(len(matrix)):
-                print(f"| {matrix[0][i]} | {matrix[1][i]} | {matrix[2][i]} |")
-                print("-------------------------")
+                for line in range(self.die_height):
+                    print(
+                        f"{self.die_render_lookup[str(matrix[0][i])][line]} * " \
+                        f"{self.die_render_lookup[str(matrix[1][i])][line]} * " \
+                        f"{self.die_render_lookup[str(matrix[2][i])][line]}"
+                    )
 
             print(f"\n{line_break}\n")
 
@@ -69,14 +146,14 @@ class KnucklebonesGame:
         Show the winner of the game.
         """
         if players[0].score == players[1].score:
-            print(f"The game was a draw! Wow!")
+            print(f"THE GAME WAS A DRAW! WOW!")
         else:
             if players[0].score > players[1].score:
                 winner = players[0].name
             else:
                 winner = players[1].name
 
-            print(f"{winner} was the winner! The score was {players[0].score} to {players[1].score}")
+            print(f"{winner} WAS THE WINNER! THE SCORE WAS {players[0].score} TO {players[1].score}")
 
 
 class KnucklebonesPlayer:
@@ -84,6 +161,7 @@ class KnucklebonesPlayer:
     def __init__(self):
         self._matrix = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
         self._column_scores = [0, 0, 0]
+        self._name = ''
         self.column_lookup = {
             'L': 0,
             'M': 1,
@@ -93,7 +171,7 @@ class KnucklebonesPlayer:
     @property
     def name(self):
         return self._name
-    
+
     @property
     def matrix(self):        
         return self._matrix
@@ -101,7 +179,7 @@ class KnucklebonesPlayer:
     @property
     def score(self):
         return sum(self.column_scores)
-    
+
     @property
     def current_column(self):
         return self._current_column
@@ -117,7 +195,8 @@ class KnucklebonesPlayer:
         if name:
             self._name = name
         else:
-            self._name = detect_quit_game(input("Please enter player name: "))
+            while not self.name.strip(' '):
+                self._name = detect_quit_game(input("Please enter player name >> "))
 
         return None
 
@@ -127,7 +206,7 @@ class KnucklebonesPlayer:
         """
         def choose_column():
             self._current_column = detect_quit_game(
-                input("Please choose a column to insert your die. (L)eft, (M)iddle, or (R)ight: ")
+                input("Please choose a column to insert your die. (L)eft, (M)iddle, or (R)ight >> ")
             )
 
             if self.current_column.upper() not in ['L', 'M', 'R']:

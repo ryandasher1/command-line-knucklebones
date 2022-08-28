@@ -32,7 +32,7 @@ def game_loop():
 
             player.add_to_matrix(knucklebones_game.current_die_value)
             opponent.remove_from_matrix(knucklebones_game.current_die_value, player.current_column)
-            print(f"The score is now {players[0].score} to {players[1].score}!")
+            print(f"\nTHE SCORE IS NOW {players[0].score} TO {players[1].score}!\n")
 
             knucklebones_game.check_for_full_matrix(player.matrix)
 

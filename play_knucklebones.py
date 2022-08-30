@@ -36,6 +36,8 @@ def game_loop():
 
             knucklebones_game.check_for_full_matrix(player.matrix)
 
+            if not knucklebones_game.active: break # Game is over.
+
     knucklebones_game.determine_winner(players)
 
 

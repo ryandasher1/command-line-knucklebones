@@ -119,7 +119,7 @@ class KnucklebonesGame:
 
     def _render_player_matrix(self, matrix, reverse=False):
         """
-        Show the layout of the die.
+        Show the layout of the dice.
         """
         for i in range(len(matrix)):
             for line in range(self.die_height): # The die need to render line-by-line to show properly on the command line.

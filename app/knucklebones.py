@@ -4,8 +4,7 @@ import sys
 
 class KnucklebonesGame:
 
-    def __init__(self):
-        self._active = True
+    def __init__(self, player_names):
         self._current_die_value = None
         self.die_render_lookup = {
             '0': self.render_no_die,
@@ -16,6 +15,16 @@ class KnucklebonesGame:
             '5': self.render_die_5,
             '6': self.render_die_6
         }
+
+        self.players = [KnucklebonesPlayer(), KnucklebonesPlayer()]
+        self.player_names = player_names
+
+        for i in range(len(self.players)):
+            try:
+                self.players[i].set_player_name(self.player_names[i])
+            except (IndexError, TypeError): # Player names not initially provided.
+                self.players[i].set_player_name()
+                continue
 
     @property
     def active(self):
@@ -32,7 +41,6 @@ class KnucklebonesGame:
                 "           ",
                 "           ",
                 "           ")
-
 
     @property
     def render_die_1(self):
@@ -85,6 +93,14 @@ class KnucklebonesGame:
     @property
     def die_height(self):
         return len(self.render_die_1)
+
+    @property
+    def player_one(self):
+        return self.players[0]
+
+    @property
+    def player_two(self):
+        return self.players[1]
 
     def set_player_order(self, players):
         """
@@ -152,32 +168,96 @@ class KnucklebonesGame:
 
         return None
 
-    def determine_winner(self, players):
+    def determine_game_winner(self):
         """
         Show the winner of the game.
         """
-        if players[0].score == players[1].score:
-            print(f"THE GAME WAS A DRAW! WOW!")
+        if self.player_one.score == self.player_two.score:
+            print("THE GAME WAS A DRAW! WOW!")
         else:
-            if players[0].score > players[1].score:
-                winner = players[0].name
+            if self.player_one.score > self.player_two.score:
+                winner = self.player_one.name
+                self.player_one.increment_wins()
             else:
-                winner = players[1].name
+                winner = self.player_two.name
+                self.player_two.increment_wins()
 
-            print(f"{winner} WAS THE WINNER! THE SCORE WAS {players[0].score} TO {players[1].score}")
+            print(f"{winner.upper()} WAS THE WINNER! THE SCORE WAS {self.player_one.score} TO {self.player_two.score}")
+
+        return None
+
+    def determine_series_winner(self):
+        """
+        Show who won the most games, if multiple games were played.
+        """
+        if self.player_one.wins == self.player_two.wins:
+            print("BOTH PLAYERS WON AN EQUAL NUMBER OF GAMES! WOW!")
+        elif (self.player_one.wins + self.player_two.wins) == 1:
+            return None # Only one game played, no need to display this messaging.
+        else:
+            if self.player_one.wins > self.player_two.wins:
+                winner = self.player_one.name
+            else:
+                winner = self.player_two.name
+
+            print(f"{winner.upper()} WON MORE ROUNDS! THE ROUND TOTALS WERE {self.player_one.wins} TO {self.player_two.wins}")
+
+        return None
+
+    def loop(self):
+        """
+        Run the game loop.
+        """
+        self._active = True
+        ordered_players = self.set_player_order(self.players)
+
+        print(f"** {ordered_players[0].name.upper()} WILL GO FIRST! **")
+
+        while self.active:
+            index = 0
+            for player in ordered_players:
+                if index:
+                    opponent = ordered_players[index - 1]
+                else:
+                    index += 1
+                    opponent = ordered_players[index]
+
+                self.show_grid(matrices=[self.player_one.matrix, self.player_two.matrix])
+
+                self.roll_the_die()
+
+                player.add_to_matrix(self.current_die_value)
+                opponent.remove_from_matrix(self.current_die_value, player.current_column)
+                print(f"\nTHE SCORE IS NOW {self.player_one.score} TO {self.player_two.score}!\n")
+
+                self.check_for_full_matrix(player.matrix)
+
+                if not self.active: break # Game is over.
+
+        self.show_grid(matrices=[self.player_one.matrix, self.player_two.matrix])
+        self.determine_game_winner()
+
+        play_again = detect_quit_game(input("Would you like to play again? (Y/N) "))
+
+        if play_again.upper() in ['Y', 'YES']:
+            for player in self.players: player.set_player_board()
+            return self.loop()
+        else:
+            self.determine_series_winner()
+            return None
 
 
 class KnucklebonesPlayer:
 
     def __init__(self):
-        self._matrix = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
-        self._column_scores = [0, 0, 0]
+        self.set_player_board()
         self._name = ''
         self.column_lookup = {
             'L': 0,
             'M': 1,
             'R': 2
         }
+        self._wins = 0
 
     @property
     def name(self):
@@ -198,6 +278,15 @@ class KnucklebonesPlayer:
     @property
     def column_scores(self):
         return self._column_scores
+
+    @property
+    def wins(self):
+        return self._wins
+
+    def increment_wins(self):
+        self._wins += 1
+
+        return None
 
     def set_player_name(self, name=None):
         """
@@ -303,6 +392,15 @@ class KnucklebonesPlayer:
             if i == 0: return False
 
         return True
+
+    def set_player_board(self):
+        """
+        Initialize an empty player board and score.
+        """
+        self._matrix = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+        self._column_scores = [0, 0, 0]
+
+        return None
 
 def detect_quit_game(input_value):
     """

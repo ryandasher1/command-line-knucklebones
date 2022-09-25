@@ -1,6 +1,7 @@
 import random
-import os
-import sys
+from os import system, name
+
+from app.utils.helpers import render_nice_message, get_input
 
 class KnucklebonesGame:
 
@@ -110,14 +111,14 @@ class KnucklebonesGame:
 
         return players
 
-    def roll_the_die(self):
+    def roll_the_die(self, player_name):
         """
         Let the player "roll" the die; and store the value rolled.
         """
-        _ = detect_quit_game(input("\n** PRESS ENTER TO ROLL THE DIE! **"))
+        _ = get_input(f"\n{'>' * 10} {player_name.upper()} MUST PRESS ENTER TO ROLL THE DIE! {'<' * 10}")
 
         self._current_die_value = random.randint(1, 6)
-        print(f"\nYou rolled a {self.current_die_value}!\n")
+        render_nice_message(f"{player_name} ROLLED A {self.current_die_value}!")
 
         return None
 
@@ -127,7 +128,7 @@ class KnucklebonesGame:
         """
         self._render_player_matrix(matrices[0], reverse=False)
 
-        print(f"\n=======================================\n")
+        print(f"\n{'=' * 99}\n")
 
         self._render_player_matrix(matrices[1], reverse=True)
 
@@ -141,14 +142,48 @@ class KnucklebonesGame:
             for line in range(self.die_height): # The die need to render line-by-line to show properly on the command line.
                 if reverse:
                     index = len(matrix) - i - 1 # The second matrix should render inverted.
+                    right_scoreboard_msg, left_scoreboard_msg = self._set_scoreboard(i, line, self.player_two)
                 else:
                     index = i
+                    left_scoreboard_msg, right_scoreboard_msg = self._set_scoreboard(i, line, self.player_one)
 
                 print(
+                    f"{left_scoreboard_msg}" \
                     f"{self.die_render_lookup[str(matrix[0][index])][line]} * " \
                     f"{self.die_render_lookup[str(matrix[1][index])][line]} * " \
-                    f"{self.die_render_lookup[str(matrix[2][index])][line]}"
+                    f"{self.die_render_lookup[str(matrix[2][index])][line]}" \
+                    f"{right_scoreboard_msg}"
                 )
+
+        return None
+
+    def _set_scoreboard(self, index, line_number, player):
+        """
+        Show the player's name and their score in the proper place.
+        """
+        scoreboard_length = 30
+        padding = 3
+        standard_fill = f"{'*' * scoreboard_length}"
+
+        if index == 1 and line_number == 1:
+            message_wrap_length = int((scoreboard_length - len(player.name) - 2) / 2)
+            return f"*{' ' * padding} {player.name.upper()} {' ' * (scoreboard_length - len(player.name) - 7)}*", standard_fill
+        elif index == 1 and line_number == 2:
+            message_wrap_length = int((scoreboard_length - len(str(player.score)) - 2) / 2)
+            return f"*{' ' * padding} {str(player.score)} {' ' * (scoreboard_length - len(str(player.score)) - 7)}*", standard_fill
+        elif index == 1:
+            return f"*{' ' * (scoreboard_length - 2)}*", standard_fill
+        else:
+            return standard_fill, standard_fill
+
+    def _clear_screen(self):
+        """
+        Clear the terminal window.
+        """
+        if name == 'nt': # Windows.
+            _ = system('cls')
+        else:
+            _ = system('clear')
 
         return None
 
@@ -173,7 +208,7 @@ class KnucklebonesGame:
         Show the winner of the game.
         """
         if self.player_one.score == self.player_two.score:
-            print("THE GAME WAS A DRAW! WOW!")
+            render_nice_message("THE GAME WAS A DRAW! WOW!")
         else:
             if self.player_one.score > self.player_two.score:
                 winner = self.player_one.name
@@ -182,7 +217,7 @@ class KnucklebonesGame:
                 winner = self.player_two.name
                 self.player_two.increment_wins()
 
-            print(f"{winner.upper()} WAS THE WINNER! THE SCORE WAS {self.player_one.score} TO {self.player_two.score}")
+            render_nice_message(f"{winner} WAS THE WINNER! THE SCORE WAS {self.player_one.score} TO {self.player_two.score}")
 
         return None
 
@@ -191,7 +226,7 @@ class KnucklebonesGame:
         Show who won the most games, if multiple games were played.
         """
         if self.player_one.wins == self.player_two.wins:
-            print("BOTH PLAYERS WON AN EQUAL NUMBER OF GAMES! WOW!")
+            render_nice_message("BOTH PLAYERS WON AN EQUAL NUMBER OF GAMES! WOW!")
         elif (self.player_one.wins + self.player_two.wins) == 1:
             return None # Only one game played, no need to display this messaging.
         else:
@@ -200,7 +235,7 @@ class KnucklebonesGame:
             else:
                 winner = self.player_two.name
 
-            print(f"{winner.upper()} WON MORE ROUNDS! THE ROUND TOTALS WERE {self.player_one.wins} TO {self.player_two.wins}")
+            render_nice_message(f"{winner.upper()} WON MORE ROUNDS! THE ROUND TOTALS WERE {self.player_one.wins} TO {self.player_two.wins}")
 
         return None
 
@@ -211,7 +246,7 @@ class KnucklebonesGame:
         self._active = True
         ordered_players = self.set_player_order(self.players)
 
-        print(f"** {ordered_players[0].name.upper()} WILL GO FIRST! **")
+        render_nice_message(f"{ordered_players[0].name.upper()} WILL GO FIRST!")
 
         while self.active:
             index = 0
@@ -224,20 +259,20 @@ class KnucklebonesGame:
 
                 self.show_grid(matrices=[self.player_one.matrix, self.player_two.matrix])
 
-                self.roll_the_die()
+                self.roll_the_die(player.name)
 
                 player.add_to_matrix(self.current_die_value)
                 opponent.remove_from_matrix(self.current_die_value, player.current_column)
-                print(f"\nTHE SCORE IS NOW {self.player_one.score} TO {self.player_two.score}!\n")
 
                 self.check_for_full_matrix(player.matrix)
+                self._clear_screen()
 
                 if not self.active: break # Game is over.
 
         self.show_grid(matrices=[self.player_one.matrix, self.player_two.matrix])
         self.determine_game_winner()
 
-        play_again = detect_quit_game(input("Would you like to play again? (Y/N) "))
+        play_again = get_input("Would you like to play again? (Y/N) ")
 
         if play_again.upper() in ['Y', 'YES']:
             for player in self.players: player.set_player_board()
@@ -296,7 +331,7 @@ class KnucklebonesPlayer:
             self._name = name
         else:
             while not self.name.strip(' '):
-                self._name = detect_quit_game(input("Please enter player name >> "))
+                self._name = get_input("Please enter player name >> ")
 
         return None
 
@@ -305,9 +340,7 @@ class KnucklebonesPlayer:
         Prompt the player to choose the column where they wish to add their rolled value.
         """
         def choose_column():
-            self._current_column = detect_quit_game(
-                input("Please choose a column to insert your die. (L)eft, (M)iddle, or (R)ight >> ")
-            )
+            self._current_column = get_input("Please choose a column to insert your die. (L)eft, (M)iddle, or (R)ight >> ")
 
             if self.current_column.upper() not in ['L', 'M', 'R']:
                 print(f"Please put a valid entry of L, M, or R.")
@@ -402,12 +435,3 @@ class KnucklebonesPlayer:
 
         return None
 
-def detect_quit_game(input_value):
-    """
-    Allow the ability to quit the game early on input.
-    """
-    if input_value.upper() == "Q":
-        print("Game ended early after pressing 'Q'!")
-        sys.exit(0)
-
-    return input_value

@@ -2,13 +2,14 @@ import random
 import argparse
 
 from app.knucklebones import KnucklebonesGame, KnucklebonesPlayer
+from app.utils.helpers import render_nice_message
 
 def start_game():
     knucklebones_game = KnucklebonesGame(args.player_names)
 
     knucklebones_game.loop()
 
-    print("** THANKS FOR PLAYING! **")
+    render_nice_message("THANKS FOR PLAYING!")
 
     return None
 

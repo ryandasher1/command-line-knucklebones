@@ -162,15 +162,15 @@ class KnucklebonesGame:
         Show the player's name and their score in the proper place.
         """
         scoreboard_length = 30
-        padding = 3
+        padding = 4
         standard_fill = f"{'*' * scoreboard_length}"
 
         if index == 1 and line_number == 1:
             message_wrap_length = int((scoreboard_length - len(player.name) - 2) / 2)
-            return f"*{' ' * padding} {player.name.upper()} {' ' * (scoreboard_length - len(player.name) - 7)}*", standard_fill
+            return f"*  {player.name.upper()}{' ' * (scoreboard_length - len(player.name) - padding)}*", standard_fill
         elif index == 1 and line_number == 2:
             message_wrap_length = int((scoreboard_length - len(str(player.score)) - 2) / 2)
-            return f"*{' ' * padding} {str(player.score)} {' ' * (scoreboard_length - len(str(player.score)) - 7)}*", standard_fill
+            return f"*  {str(player.score)}{' ' * (scoreboard_length - len(str(player.score)) - padding)}*", standard_fill
         elif index == 1:
             return f"*{' ' * (scoreboard_length - 2)}*", standard_fill
         else:
@@ -272,7 +272,7 @@ class KnucklebonesGame:
         self.show_grid(matrices=[self.player_one.matrix, self.player_two.matrix])
         self.determine_game_winner()
 
-        play_again = get_input("Would you like to play again? (Y/N) ")
+        play_again = get_input(">> Would you like to play again? (Y/N) ")
 
         if play_again.upper() in ['Y', 'YES']:
             for player in self.players: player.set_player_board()
@@ -331,7 +331,10 @@ class KnucklebonesPlayer:
             self._name = name
         else:
             while not self.name.strip(' '):
-                self._name = get_input("Please enter player name >> ")
+                self._name = get_input(">> Please enter player name: ")
+
+        if len(self._name) > 24:
+            self._name = self._name[:21] + "..."
 
         return None
 
@@ -340,16 +343,16 @@ class KnucklebonesPlayer:
         Prompt the player to choose the column where they wish to add their rolled value.
         """
         def choose_column():
-            self._current_column = get_input("Please choose a column to insert your die. (L)eft, (M)iddle, or (R)ight >> ")
+            self._current_column = get_input(">> Please choose a column to insert your die. (L)eft, (M)iddle, or (R)ight: ")
 
             if self.current_column.upper() not in ['L', 'M', 'R']:
-                print(f"Please put a valid entry of L, M, or R.")
+                print(f"Please put a valid entry of L, M, or R!")
                 choose_column()
             else:
                 self._current_column = self.column_lookup[self.current_column.upper()]
 
                 if self.is_column_full():
-                    print(f"Select a different column; the column you selected is full.")
+                    print(f"Select a different column; the column you selected is full!")
                     choose_column()
                 else:
                     return None

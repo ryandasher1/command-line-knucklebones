@@ -6,7 +6,7 @@ This is a competitive version of Knucklebones, playable by two people from the c
 
 The objective is to score more points than your opponent. A round begins by "rolling" a die, and then you place the die in one of three columns. The value of that die is added to your total score. Three dice will slot into each column, and the game will end when one player has filled all of their columns.
 
-You can earn multipliers by putting die of the same value in the same column. The multiplier math is: ({die_value} * {num_of_die_in_column}) * {num_of_die_in_column}.
+You can earn multipliers by putting die of the same value in the same column. The multiplier math is: ({die_value} * {number_of_die_in_column}) * {number_of_die_in_column}.
 
 You can remove your opponent's dice by placing a die of the same value in a matching column. E.g. If your opponent has two sixes in the right column, and you place a six in the right column, their sixes will be removed from the board.
 
@@ -15,3 +15,7 @@ You can remove your opponent's dice by placing a die of the same value in a matc
 Requirements: Python3
 
     python play_knucklebones.py -p Sharon -p Ryan
+
+## Running tests
+
+    python -m pytest

@@ -6,6 +6,7 @@ from app.utils.helpers import render_nice_message, get_input
 class KnucklebonesGame:
 
     def __init__(self, player_names):
+        self._active = False
         self._current_die_value = None
         self.die_render_lookup = {
             '0': self.render_no_die,
@@ -103,6 +104,14 @@ class KnucklebonesGame:
     def player_two(self):
         return self.players[1]
 
+    def set_game_to_active(self):
+        """
+        Make the game active.
+        """
+        self._active = True
+
+        return None
+
     def set_player_order(self, players):
         """
         Choose a random player to make the first roll.
@@ -115,7 +124,7 @@ class KnucklebonesGame:
         """
         Let the player "roll" the die; and store the value rolled.
         """
-        _ = get_input(f"\n{'>' * 10} {player_name.upper()} MUST PRESS ENTER TO ROLL THE DIE! {'<' * 10}")
+        _ = get_input(f"\n{'>' * 10} {player_name} MUST PRESS ENTER TO ROLL THE DIE! {'<' * 10}")
 
         self._current_die_value = random.randint(1, 6)
         render_nice_message(f"{player_name} ROLLED A {self.current_die_value}!")
@@ -167,7 +176,7 @@ class KnucklebonesGame:
 
         if index == 1 and line_number == 1:
             message_wrap_length = int((scoreboard_length - len(player.name) - 2) / 2)
-            return f"*  {player.name.upper()}{' ' * (scoreboard_length - len(player.name) - padding)}*", standard_fill
+            return f"*  {player.name}{' ' * (scoreboard_length - len(player.name) - padding)}*", standard_fill
         elif index == 1 and line_number == 2:
             message_wrap_length = int((scoreboard_length - len(str(player.score)) - 2) / 2)
             return f"*  {str(player.score)}{' ' * (scoreboard_length - len(str(player.score)) - padding)}*", standard_fill
@@ -176,7 +185,7 @@ class KnucklebonesGame:
         else:
             return standard_fill, standard_fill
 
-    def _clear_screen(self):
+    def clear_screen(self):
         """
         Clear the terminal window.
         """
@@ -235,7 +244,7 @@ class KnucklebonesGame:
             else:
                 winner = self.player_two.name
 
-            render_nice_message(f"{winner.upper()} WON MORE ROUNDS! THE ROUND TOTALS WERE {self.player_one.wins} TO {self.player_two.wins}")
+            render_nice_message(f"{winner} WON MORE ROUNDS! THE ROUND TOTALS WERE {self.player_one.wins} TO {self.player_two.wins}")
 
         return None
 
@@ -243,10 +252,11 @@ class KnucklebonesGame:
         """
         Run the game loop.
         """
-        self._active = True
+        self.set_game_to_active()
+
         ordered_players = self.set_player_order(self.players)
 
-        render_nice_message(f"{ordered_players[0].name.upper()} WILL GO FIRST!")
+        render_nice_message(f"{ordered_players[0].name} WILL GO FIRST!")
 
         while self.active:
             index = 0
@@ -265,7 +275,7 @@ class KnucklebonesGame:
                 opponent.remove_from_matrix(self.current_die_value, player.current_column)
 
                 self.check_for_full_matrix(player.matrix)
-                self._clear_screen()
+                self.clear_screen()
 
                 if not self.active: break # Game is over.
 
@@ -293,10 +303,11 @@ class KnucklebonesPlayer:
             'R': 2
         }
         self._wins = 0
+        self._current_column = None
 
     @property
     def name(self):
-        return self._name
+        return self._name.upper()
 
     @property
     def matrix(self):        
